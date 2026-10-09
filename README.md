@@ -1,24 +1,23 @@
-Aşağıdakı mətni tam şəkildə kopyalayıb layihənizdəki **`README.md`** faylına yapışdırın. Bu versiya həm münsiflər (AI və insan) üçün tam aydın, həm də vizual olaraq çox səliqəlidir:
-
-```markdown
-# 🌉 SignalBridge — Autonomous Infrastructure Signal Router
+# SignalBridge — Autonomous Infrastructure & Telecom Signal Router
 
 SignalBridge is an enterprise-grade signal triage and incident routing platform designed for large-scale civic and telecommunications infrastructure (DemoTel Baku context). It combines multi-modal ingestion with strict code-side deterministic routing, ensuring automated efficiency while eliminating non-deterministic LLM routing errors.
 
 ---
 
-## 🔗 Links
-- **Live Demo:** [https://signalbridge-psi.vercel.app/](https://signalbridge-psi.vercel.app/)
+## 🔗 Live Deployment & Repository
+
+- **Live Production URL:** [https://signalbridge-psi.vercel.app/](https://signalbridge-psi.vercel.app/)
 - **GitHub Repository:** [https://github.com/Efsann/signalbridge](https://github.com/Efsann/signalbridge)
 
 ---
 
-## ✨ Key Features
-- **Multi-Channel Ingestion:** Collects incident signals across Mobile App Chat, Web Portal, and Voice Transcriptions.
-- **Gemini 1.5 Flash Engine:** Performs real-time sentiment extraction, department categorization, severity ranking, and confidence scoring.
-- **Deterministic Routing:** Final routing decisions are executed via rule-based software logic—never blindly delegated to generative AI outputs.
-- **Circuit Breaker & Safety Fallback:** Automatically redirects to an audit-logged `Manual Review` queue during API rate limiting (429), timeouts, or schema drift.
-- **KPI Dashboard & Audit Logging:** In-memory, compliance-ready immutable signal registry with live metrics and `.JSON` export capabilities.
+## 🌟 Key Features
+
+- **Multi-Channel Signal Ingestion:** Collects incident signals across Mobile App Chat, Web Portal, and Voice Transcriptions[cite: 2].
+- **Gemini 1.5 Flash Triage Engine:** Performs real-time sentiment extraction, department categorization, severity ranking, and confidence scoring.
+- **Deterministic Code-Side Routing:** Final routing decisions are strictly executed via rule-based software logic—never blindly delegated to generative AI outputs[cite: 2].
+- **Safety Fallback & Circuit Breaker:** In cases of API rate limiting (429), quota exhaustion, or schema drift, the system automatically redirects to an audit-logged `Manual Review` queue[cite: 2].
+- **Processed Complaints Ledger:** In-memory, compliance-ready immutable signal registry with live metrics and export capabilities[cite: 2].
 
 ---
 
@@ -91,6 +90,3 @@ npm run dev
 * **Fault Tolerance:** Includes a UI toggle to simulate API outages, proving the system's graceful degradation to code-side manual routing.
 * **Enterprise Readiness:** Features a `.JSON` exportable Audit Log and live KPI metrics dashboard.
 
-```
-
-```

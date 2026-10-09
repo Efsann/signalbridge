@@ -26,7 +26,10 @@ interface SubmitFormProps {
   onComplaintProcessed: (complaint: Complaint) => void;
   onInjectBatch?: (batch: Complaint[]) => void;
   initialText?: string;
+  simulateError: boolean;
 }
+
+const SAFETY_OVERRIDE_REASON = "Safety Override: API Timeout simulated";
 
 interface TestExample {
   title: string;
@@ -75,7 +78,7 @@ const TEST_EXAMPLES: TestExample[] = [
 ];
 
 export const SubmitForm: React.FC<SubmitFormProps> = (props) => {
-  const { onComplaintProcessed, initialText } = props;
+  const { onComplaintProcessed, initialText, simulateError } = props;
   const [channel, setChannel] = useState<Channel>("app_chat");
   const [rawText, setRawText] = useState(initialText || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -126,6 +129,27 @@ export const SubmitForm: React.FC<SubmitFormProps> = (props) => {
     const maskResult = maskPII(rawText.trim());
 
     try {
+      if (simulateError) {
+        const manualReviewComplaint: Complaint = {
+          id: complaintId,
+          ts: now,
+          channel,
+          rawText: rawText.trim(),
+          maskedText: maskResult.maskedText,
+          source: "ai_failed",
+          department: "Manual Review",
+          routedReason: SAFETY_OVERRIDE_REASON,
+          isOverriddenToManual: true,
+          hasMaskedData: maskResult.hasMaskedData,
+          maskDetails: maskResult.counts,
+          errorMessage: SAFETY_OVERRIDE_REASON,
+        };
+
+        setLatestComplaint(manualReviewComplaint);
+        onComplaintProcessed(manualReviewComplaint);
+        return;
+      }
+
       // 2. Complaints typed in Submit Form are ALWAYS sent live to Gemini
       const classification = await classifyComplaint(maskResult.maskedText, {
         bypassCache: true,
@@ -243,7 +267,9 @@ export const SubmitForm: React.FC<SubmitFormProps> = (props) => {
             </h2>
           </div>
           <span className="text-xs text-slate-500 font-mono">
-            Always Live AI Evaluation &middot; Strictly Masked
+            {simulateError
+              ? "Safety Override Simulation · API Bypassed"
+              : "Always Live AI Evaluation · Strictly Masked"}
           </span>
         </div>
 
@@ -339,7 +365,7 @@ export const SubmitForm: React.FC<SubmitFormProps> = (props) => {
               ) : (
                 <>
                   <Send className="w-3.5 h-3.5" />
-                  <span>Submit Live Triage</span>
+                  <span>{simulateError ? "Submit to Manual Review" : "Submit Live Triage"}</span>
                 </>
               )}
             </button>
@@ -402,7 +428,9 @@ export const SubmitForm: React.FC<SubmitFormProps> = (props) => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Masked Text (Transmitted to Gemini)
+                  {latestComplaint.errorMessage === SAFETY_OVERRIDE_REASON
+                    ? "Masked Text (Not Transmitted)"
+                    : "Masked Text (Transmitted to Gemini)"}
                 </span>
                 {latestComplaint.hasMaskedData && (
                   <span className="text-[11px] text-amber-700 font-medium">
@@ -447,10 +475,14 @@ export const SubmitForm: React.FC<SubmitFormProps> = (props) => {
                 <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800">
-                    AI unavailable, needs manual review
+                    {latestComplaint.errorMessage === SAFETY_OVERRIDE_REASON
+                      ? "Circuit breaker active: API call bypassed"
+                      : "AI unavailable, needs manual review"}
                   </h4>
                   <p className="text-xs text-amber-700 mt-0.5">
-                    {latestComplaint.errorMessage || "The model response could not be verified."}
+                    {latestComplaint.errorMessage === SAFETY_OVERRIDE_REASON
+                      ? "The API was not called. This signal was routed directly to Manual Review."
+                      : latestComplaint.errorMessage || "The model response could not be verified."}
                   </p>
                   <p className="text-[11px] text-amber-600 mt-1 italic">
                     Per SignalBridge rules: No fake AI labels are substituted.

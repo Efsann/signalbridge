@@ -30,6 +30,8 @@ import {
   Building2,
   BarChart2,
   BookOpen,
+  Download,
+  ShieldAlert,
 } from "lucide-react";
 
 export default function App() {
@@ -41,6 +43,7 @@ export default function App() {
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [prefilledComplaintText, setPrefilledComplaintText] = useState("");
+  const [simulateError, setSimulateError] = useState(false);
 
   // Lifted Simulation Clock State
   const [simTime, setSimTime] = useState<number>(SIM_START_TIME);
@@ -181,6 +184,29 @@ export default function App() {
   };
 
   const activeIncidentCount = incidents.filter((i) => i.status !== "Resolved").length;
+  const aiRoutedCount = complaints.filter(
+    (complaint) =>
+      complaint.department && complaint.department !== "Manual Review"
+  ).length;
+  const manualReviewCount = complaints.filter(
+    (complaint) => complaint.department === "Manual Review"
+  ).length;
+
+  const handleExportAuditLog = () => {
+    const auditLog = new Blob([JSON.stringify(complaints, null, 2)], {
+      type: "application/json",
+    });
+    const downloadUrl = URL.createObjectURL(auditLog);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `signalbridge-audit-log-${new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(downloadUrl);
+  };
 
   return (
     <div className="min-h-screen bg-slate-100/70 text-slate-900 flex flex-col font-sans">
@@ -194,6 +220,43 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+        {/* Operational KPIs and circuit-breaker controls */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3" aria-label="Operational dashboard">
+          <div className="rounded-xl bg-slate-900 text-white border border-slate-800 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Signals</p>
+            <p className="mt-2 text-2xl font-bold font-mono">{complaints.length}</p>
+          </div>
+          <div className="rounded-xl bg-slate-900 text-white border border-slate-800 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">AI Routed</p>
+            <p className="mt-2 text-2xl font-bold font-mono text-emerald-400">{aiRoutedCount}</p>
+          </div>
+          <div className="rounded-xl bg-slate-900 text-white border border-slate-800 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Manual Review</p>
+            <p className="mt-2 text-2xl font-bold font-mono text-amber-400">{manualReviewCount}</p>
+          </div>
+          <button
+            type="button"
+            aria-pressed={simulateError}
+            onClick={() => setSimulateError((enabled) => !enabled)}
+            className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
+              simulateError
+                ? "bg-amber-500 text-slate-950 border-amber-400 hover:bg-amber-400"
+                : "bg-slate-800 text-slate-100 border-slate-700 hover:bg-slate-700"
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4" />
+            <span>{simulateError ? "Circuit Breaker: ON" : "Circuit Breaker: OFF"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleExportAuditLog}
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-100 transition-colors hover:bg-slate-700"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export Audit Log (.JSON)</span>
+          </button>
+        </section>
+
         {/* Numbered Demo Guide Panel */}
         <DemoGuidePanel
           onStep1SubmitAZ={handleStep1SubmitAZ}
@@ -349,6 +412,7 @@ export default function App() {
               onComplaintProcessed={handleComplaintProcessed}
               onInjectBatch={handleInjectBatch}
               initialText={prefilledComplaintText}
+              simulateError={simulateError}
             />
             {complaints.length > 0 && (
               <div className="pt-4 border-t border-slate-200">

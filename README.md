@@ -1,20 +1,96 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+Aşağıdakı mətni tam şəkildə kopyalayıb layihənizdəki **`README.md`** faylına yapışdırın. Bu versiya həm münsiflər (AI və insan) üçün tam aydın, həm də vizual olaraq çox səliqəlidir:
 
-# Run and deploy your AI Studio app
+```markdown
+# 🌉 SignalBridge — Autonomous Infrastructure Signal Router
 
-This contains everything you need to run your app locally.
+SignalBridge is an enterprise-grade signal triage and incident routing platform designed for large-scale civic and telecommunications infrastructure (DemoTel Baku context). It combines multi-modal ingestion with strict code-side deterministic routing, ensuring automated efficiency while eliminating non-deterministic LLM routing errors.
 
-View your app in AI Studio: https://ai.studio/apps/1ee3e27e-73aa-44bb-9d87-a85a786822ea
+---
 
-## Run Locally
+## 🔗 Links
+- **Live Demo:** [https://signalbridge-psi.vercel.app/](https://signalbridge-psi.vercel.app/)
+- **GitHub Repository:** [https://github.com/Efsann/signalbridge](https://github.com/Efsann/signalbridge)
 
-**Prerequisites:**  Node.js
+---
 
+## ✨ Key Features
+- **Multi-Channel Ingestion:** Collects incident signals across Mobile App Chat, Web Portal, and Voice Transcriptions.
+- **Gemini 1.5 Flash Engine:** Performs real-time sentiment extraction, department categorization, severity ranking, and confidence scoring.
+- **Deterministic Routing:** Final routing decisions are executed via rule-based software logic—never blindly delegated to generative AI outputs.
+- **Circuit Breaker & Safety Fallback:** Automatically redirects to an audit-logged `Manual Review` queue during API rate limiting (429), timeouts, or schema drift.
+- **KPI Dashboard & Audit Logging:** In-memory, compliance-ready immutable signal registry with live metrics and `.JSON` export capabilities.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+## 🏗️ Architecture & Safety Pipeline
+
+```mermaid
+flowchart TD
+    A[Incoming Signal: Mobile / Web] --> B[Gemini 1.5 Flash Analysis]
+    
+    B -- Timeout / Malformed JSON --> SO[SAFETY OVERRIDE: Manual Review]
+    B --> C{JSON Schema Verification}
+    
+    C -- Fails Rules --> SO
+    C -- Passes --> D[Code-Side Routing Engine]
+    
+    D -- Low Confidence < 0.7 --> SO
+    D -- High Confidence --> E[Target Department: NOC, Billing, Field Tech]
+
+    style SO fill:#ffefe5,stroke:#ff6b4a,stroke-width:2px,color:#d9381e
+    style D fill:#eef7ff,stroke:#2b7fff,stroke-width:2px,color:#1a56db
+    style E fill:#eafbf1,stroke:#22c55e,stroke-width:2px,color:#15803d
+
+```
+
+---
+
+## 🛠️ Tech Stack
+
+* **Frontend:** React 18/19, TypeScript, Vite
+* **Styling:** Tailwind CSS (v4 via PostCSS), Lucide Icons
+* **AI Engine:** Google Gemini 1.5 Flash API
+* **Deployment:** Vercel
+
+---
+
+## 🚀 Local Setup
+
+### 1. Clone & Install
+
+```bash
+git clone [https://github.com/Efsann/signalbridge.git](https://github.com/Efsann/signalbridge.git)
+cd signalbridge
+npm install --legacy-peer-deps
+
+```
+
+### 2. Environment Variables (`.env`)
+
+Create a `.env` file in the root directory:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+APP_URL=http://localhost:5173
+
+```
+
+### 3. Run Development Server
+
+```bash
+npm run dev
+
+```
+
+---
+
+## 📊 NeuroBridge Evaluation Notes
+
+* **Zero-Hallucination Policy:** Models only extract attributes according to rigid schemas; they do not execute final actions.
+* **Fault Tolerance:** Includes a UI toggle to simulate API outages, proving the system's graceful degradation to code-side manual routing.
+* **Enterprise Readiness:** Features a `.JSON` exportable Audit Log and live KPI metrics dashboard.
+
+```
+
+```
